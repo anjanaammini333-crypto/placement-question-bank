@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Placement Question Bank</title>
+<style>
+:root{--navy:#14243a;--teal:#137c8b;--bg:#f4f7fb;--ink:#243246;--muted:#66758a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#14243a,#137c8b);color:white;padding:30px 5vw 26px}header h1{margin:0 0 8px;font-size:30px}header p{margin:0;color:#dbe9f0}
+main{max-width:1100px;margin:24px auto;padding:0 18px}.panel{background:white;border-radius:16px;padding:20px;box-shadow:0 4px 18px #14243a10;margin-bottom:18px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}input,select{width:100%;padding:12px;border:1px solid #d6deea;border-radius:10px;font-size:15px;background:white}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}button{border:0;background:var(--teal);color:white;border-radius:10px;padding:11px 15px;cursor:pointer;font-weight:600}button.secondary{background:#e9f1f5;color:#234255}button:hover{opacity:.9}
+.card{border:1px solid #e4eaf0;border-radius:14px;padding:16px;margin:12px 0}.tag{display:inline-block;background:#e6f4f5;color:#126979;padding:5px 9px;border-radius:99px;font-size:12px;margin:0 6px 8px 0}.q{font-weight:650;font-size:17px;margin:4px 0 12px}.answer{display:none;color:#46586d;background:#f6f9fc;border-radius:10px;padding:12px;line-height:1.5}.answer.show{display:block}.actions{display:flex;gap:8px;flex-wrap:wrap}.small{font-size:13px;color:var(--muted)}footer{text-align:center;color:var(--muted);padding:20px}
+</style></head><body>
+<header><h1>🎯 Placement Question Bank</h1><p>A shared question library for placement trainers — search, filter and practise.</p></header>
+<main><section class="panel"><div class="filters">
+<input id="search" placeholder="Search questions, keywords..." oninput="render()">
+<select id="category" onchange="render()"><option value="">All categories</option><option>HR Interview</option><option>Situational</option><option>Technical</option><option>Resume & Projects</option><option>Group Discussion</option><option>Debate</option><option>JAM</option></select>
+<select id="role" onchange="render()"><option value="">All roles / branches</option><option>General</option><option>Software / IT</option><option>Engineering</option><option>Analyst</option><option>Leadership</option></select>
+<select id="level" onchange="render()"><option value="">All difficulty levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+</div><div class="toolbar"><button onclick="resetFilters()">Reset filters</button><button class="secondary" onclick="downloadCSV()">Download filtered questions (CSV)</button><span id="count" class="small"></span></div></section>
+<div id="list"></div></main><footer>Placement Question Bank · A resource for faculty and trainers</footer>
+<script>
+const data=[
+{c:"HR Interview",r:"General",l:"Beginner",q:"Tell me about yourself.",a:"Structure a concise introduction: education, relevant skills, experience/projects, and career goal. Avoid repeating the resume word-for-word."},
+{c:"HR Interview",r:"General",l:"Beginner",q:"Why should we hire you?",a:"Connect 2–3 strengths and evidence from projects, coursework or experience to the role's requirements."},
+{c:"HR Interview",r:"General",l:"Intermediate",q:"What is one weakness you are actively working on?",a:"Choose a genuine manageable area, explain the steps taken to improve, and give evidence of progress."},
+{c:"HR Interview",r:"General",l:"Intermediate",q:"Where do you see yourself in five years?",a:"Discuss realistic growth, skill development and contribution in a direction aligned with the role."},
+{c:"HR Interview",r:"General",l:"Intermediate",q:"Describe a time you received constructive feedback.",a:"Use STAR: situation, task, action and result. Emphasize learning and how you applied the feedback."},
+{c:"HR Interview",r:"General",l:"Advanced",q:"What would make you leave a job or organisation?",a:"Keep the response professional: seek growth, meaningful contribution and alignment; avoid criticizing former colleagues."},
+{c:"Situational",r:"Leadership",l:"Intermediate",q:"Your team member is not contributing before a deadline. What would you do?",a:"Clarify expectations, speak privately, understand barriers, agree on actions and escalate appropriately if necessary."},
+{c:"Situational",r:"General",l:"Intermediate",q:"You disagree with your manager's decision. How would you handle it?",a:"Understand the rationale, present evidence respectfully, discuss alternatives and support the final decision."},
+{c:"Situational",r:"General",l:"Beginner",q:"How would you handle two urgent tasks with the same deadline?",a:"Clarify impact and expectations, prioritize, communicate early and propose a realistic plan."},
+{c:"Situational",r:"Leadership",l:"Advanced",q:"A customer is angry about a service failure. What steps would you take?",a:"Listen without interrupting, acknowledge the issue, clarify facts, offer a solution within authority and follow up."},
+{c:"Technical",r:"Software / IT",l:"Beginner",q:"Explain the difference between a compiler and an interpreter.",a:"A compiler translates source code before execution; an interpreter executes or translates instructions during runtime, though modern systems may combine approaches."},
+{c:"Technical",r:"Software / IT",l:"Intermediate",q:"What is the difference between an array and a linked list?",a:"Compare memory layout, access time, insertion/deletion trade-offs and implementation."},
+{c:"Technical",r:"Software / IT",l:"Intermediate",q:"Explain object-oriented programming and its main principles.",a:"Define OOP and explain encapsulation, abstraction, inheritance and polymorphism with concise examples."},
+{c:"Technical",r:"Software / IT",l:"Advanced",q:"How would you approach debugging a performance issue in an application?",a:"Reproduce and measure, inspect logs and profiling data, isolate bottlenecks, test hypotheses and validate the fix."},
+{c:"Technical",r:"Analyst",l:"Beginner",q:"What is the difference between data and information?",a:"Data are raw facts; information is data processed or contextualized to support understanding or decisions."},
+{c:"Technical",r:"Analyst",l:"Intermediate",q:"How would you handle missing values in a dataset?",a:"Assess why values are missing and their extent; consider deletion, imputation or explicit handling based on context and document assumptions."},
+{c:"Technical",r:"Engineering",l:"Intermediate",q:"Describe a technical problem you solved during a project.",a:"Explain the problem, your analysis, options, chosen approach, implementation and measurable result."},
+{c:"Resume & Projects",r:"General",l:"Beginner",q:"Walk me through your resume.",a:"Give a clear narrative linking education, experience, skills and projects to the target role."},
+{c:"Resume & Projects",r:"Engineering",l:"Intermediate",q:"What was your individual contribution to your final-year project?",a:"Identify your specific responsibilities, decisions, tools, challenges and outcomes. Be precise about team versus individual work."},
+{c:"Resume & Projects",r:"General",l:"Intermediate",q:"If you could improve your project, what would you change?",a:"Identify a practical improvement and explain its impact, constraints and how you would implement it."},
+{c:"Resume & Projects",r:"General",l:"Advanced",q:"What evidence demonstrates that your project was successful?",a:"Use outcomes, user feedback, metrics, testing, completion criteria or other verifiable evidence."},
+{c:"Group Discussion",r:"General",l:"Intermediate",q:"Is artificial intelligence creating more jobs than it is replacing?",a:"Explore both sides, examples, reskilling, industry differences and a balanced conclusion."},
+{c:"Group Discussion",r:"General",l:"Intermediate",q:"Should college attendance be mandatory?",a:"Consider learning outcomes, flexibility, accountability, student circumstances and alternatives."},
+{c:"Group Discussion",r:"General",l:"Advanced",q:"Can social media be considered a reliable source of information?",a:"Discuss speed and access versus misinformation, verification, algorithms and media literacy."},
+{c:"Debate",r:"General",l:"Intermediate",q:"Remote work is better than office work.",a:"Prepare arguments for both sides around productivity, collaboration, wellbeing, costs and roles."},
+{c:"Debate",r:"General",l:"Advanced",q:"Grades are more important than skills in recruitment.",a:"Consider academic foundations, practical evidence, fairness, employer requirements and long-term performance."},
+{c:"Debate",r:"General",l:"Intermediate",q:"Technology makes people less socially connected.",a:"Contrast digital connection and access with attention, depth of interaction and dependency."},
+{c:"JAM",r:"General",l:"Beginner",q:"Speak for one minute on: The first impression.",a:"Suggested structure: hook, meaning, personal or practical example, takeaway."},
+{c:"JAM",r:"General",l:"Beginner",q:"Speak for one minute on: A failure that taught me something.",a:"Use a brief story, lesson learned and what changed afterward."},
+{c:"JAM",r:"General",l:"Intermediate",q:"Speak for one minute on: If I could change one thing in my college.",a:"State the change, explain why it matters, suggest a realistic implementation and conclude."},
+{c:"JAM",r:"General",l:"Intermediate",q:"Speak for one minute on: The power of listening.",a:"Discuss listening in relationships, teamwork and professional communication with an example."}
+];
+function render(){let s=document.getElementById('search').value.toLowerCase(),c=document.getElementById('category').value,r=document.getElementById('role').value,l=document.getElementById('level').value;let filtered=data.filter(x=>(!c||x.c===c)&&(!r||x.r===r||x.r==="General")&&(!l||x.l===l)&&(!s||(x.q+x.a+x.c+x.r).toLowerCase().includes(s)));document.getElementById('count').textContent=filtered.length+" questions";document.getElementById('list').innerHTML=filtered.map((x,i)=>`<article class="card"><span class="tag">${x.c}</span><span class="tag">${x.r}</span><span class="tag">${x.l}</span><div class="q">${x.q}</div><div class="actions"><button class="secondary" onclick="this.parentElement.nextElementSibling.classList.toggle('show')">Show trainer notes</button></div><div class="answer">${x.a}</div></article>`).join('')||'<section class="panel">No questions found. Try another filter.</section>';window.filtered=filtered}
+function resetFilters(){['search','category','role','level'].forEach(id=>document.getElementById(id).value='');render()}
+function downloadCSV(){let rows=[['Category','Role','Level','Question','Trainer Notes'],...(window.filtered||data).map(x=>[x.c,x.r,x.l,x.q,x.a])];let csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');let blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='placement_questions.csv';a.click();URL.revokeObjectURL(url)}
+render();
+</script></body></html>
